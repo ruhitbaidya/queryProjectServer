@@ -22,7 +22,7 @@ app.use(
 // product_alternative
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_DB}:${process.env.USER_PASS}@datafind.xfgov3s.mongodb.net/?retryWrites=true&w=majority&appName=datafind`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -73,9 +73,44 @@ async function run() {
     })
 
 
+    app.get("/findData/:id", async(req, res)=>{
+            try{
+                const ids = {_id : new ObjectId(req.params.id)}
+                const result = await datacoll.findOne(ids);
+                res.send(result)
+            }
+            catch(err){
+                res.send(err.message)
+            }
+    })
 
+    app.put("/updateProduct/:id", async(req, res)=>{
+        try{
+            const id = {_id : new ObjectId(req.params.id)}
+            const find = req.body;
+            const options = {
+              $set : find
+            }
+            console.log(options)
+            const result = await datacoll.updateOne(id, options);
+            res.send(result)
 
+        }
+        catch(err){
+            res.send(err.message)
+        }
+    })
 
+    app.delete("/delete/:id", async(req, res)=>{
+        try{
+          const ids = {_id : new ObjectId(req.params.id)};
+          const result = await datacoll.deleteOne(ids)
+          res.send(result)
+        } 
+        catch(err){
+          res.send(err.message)
+        }
+    })
 
     await client.connect();
     // Send a ping to confirm a successful connection
