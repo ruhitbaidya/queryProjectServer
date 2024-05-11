@@ -159,7 +159,16 @@ async function run() {
         res.send(err.message)
       }
     })
-    
+    app.get("/getOtherComment/:email", async(req, res)=>{
+        try{
+          const email = req.params.email;
+          const result = await dataRecomendation.find({reEmail : {$ne : email}}).toArray()
+          res.send(result);
+        }
+        catch(err){
+          res.send(err.message)
+        }
+    })
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
