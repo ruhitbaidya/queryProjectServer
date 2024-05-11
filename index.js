@@ -122,6 +122,16 @@ async function run() {
         const result = await dataRecomendation.insertOne(datas);
         res.send(result);
     })
+    app.get("/allcomment/:id", async(req, res)=>{
+        try{
+          const idsfi = {queryId : req.params.id}
+          const result = await dataRecomendation.find(idsfi).toArray();
+          res.send(result)
+        }
+        catch(err){
+          res.send(err.message)
+        }
+    })
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
