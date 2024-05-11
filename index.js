@@ -169,6 +169,13 @@ async function run() {
           res.send(err.message)
         }
     })
+  
+    app.get("/searchproduct/:text", async(req, res)=>{
+        const text = req.params.text;
+        const filter = { productName: { $regex: text, $options: 'i' } };
+        const result = await datacoll.find(filter).toArray();
+        res.send(result)
+    })
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
