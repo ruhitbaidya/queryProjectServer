@@ -38,6 +38,7 @@ async function run() {
   try {
     
     const datacoll = client.db("alternativeProduct").collection("product");
+    const dataRecomendation = client.db("alternativeProduct").collection("recommendation");
 
     app.post("/createProduct", async(req, res)=>{
         const prods = req.body;
@@ -112,6 +113,15 @@ async function run() {
         }
     })
 
+    app.post("/comment", async(req, res)=>{
+        console.log(req.body)
+        const idscount = {_id : new ObjectId(req.body.queryId)};
+        const increment = {$inc : {"userinfotime.recommendationCount" : 1}}
+        await datacoll.updateOne(idscount, increment);
+        const datas = req.body;
+        const result = await dataRecomendation.insertOne(datas);
+        res.send(result);
+    })
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
