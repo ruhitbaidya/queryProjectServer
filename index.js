@@ -122,6 +122,7 @@ async function run() {
         const result = await dataRecomendation.insertOne(datas);
         res.send(result);
     })
+
     app.get("/allcomment/:id", async(req, res)=>{
         try{
           const idsfi = {queryId : req.params.id}
@@ -132,6 +133,33 @@ async function run() {
           res.send(err.message)
         }
     })
+
+    app.get("/mycomment/:id", async(req, res)=>{
+      
+      try{  
+        const email = {reEmail : req.params.id}
+        const result = await dataRecomendation.find(email).toArray();
+        res.send(result)
+      }
+      catch(err){
+        res.send(err.message)
+      }
+    })
+
+    app.post("/deleteProduct/:id", async(req, res)=>{
+      try{
+        const ids = {_id : new ObjectId(req.params.id)}
+        const idscount = {_id : new ObjectId(req.body.id)};
+        const increment = {$inc : {"userinfotime.recommendationCount" : -1}}
+        await datacoll.updateOne(idscount, increment);
+        const result = await dataRecomendation.deleteOne(ids);
+        res.send(result)
+      }
+      catch(err){
+        res.send(err.message)
+      }
+    })
+    
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
