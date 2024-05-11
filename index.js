@@ -60,6 +60,17 @@ async function run() {
         }
     })
 
+    app.get("/getProductByEmail", async(req, res)=>{
+        try{
+            const email = {"userinfotime.userEmail" : req.query.email}
+            const result = await datacoll.find(email).toArray();
+            console.log(result)
+            res.send(result)
+        }
+        catch(err){
+            res.send(err.message)
+        }
+    })
 
 
 
