@@ -1,9 +1,19 @@
 const express = require("express");
-const cors = require("cors")
+const cors = require("cors");
+require("dotenv").config()
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(
+    cors({
+      origin: [
+        "http://localhost:5173",
+        "https://cardoctor-bd.web.app",
+        "https://cardoctor-bd.firebaseapp.com",
+      ],
+      credentials: true,
+    })
+  );
 
 
 // password
@@ -13,7 +23,7 @@ app.use(cors());
 
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://product_alternative:PVOatlalzfcaRiaF@datafind.xfgov3s.mongodb.net/?retryWrites=true&w=majority&appName=datafind";
+const uri = `mongodb+srv://${process.env.USER_DB}:${process.env.USER_PASS}@datafind.xfgov3s.mongodb.net/?retryWrites=true&w=majority&appName=datafind`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -40,7 +50,15 @@ async function run() {
         }
     })
 
-
+    app.get('/findProduct', async(req, res)=>{
+        try{
+            const result = await datacoll.find().toArray();
+            res.send(result)
+        }
+        catch(err){
+            res.send(err.message)
+        }
+    })
 
 
 
