@@ -95,12 +95,15 @@ async function run() {
       }
     })
 
-    app.get("/getProductByEmail", async (req, res) => {
+    app.get("/getProductByEmail", verify, async (req, res) => {
       try {
-        const email = { "userinfotime.userEmail": req.query.email }
-        const result = await datacoll.find(email).toArray();
-        console.log(result)
-        res.send(result)
+        if(req.decode === req.query.email){
+          const email = {"userinfotime.userEmail" : req.query.email }
+          const result = await datacoll.find(email).toArray();
+          res.send(result)
+        }else{
+          res.send({error : "router : Invalid User"})
+        }
       }
       catch (err) {
         res.send(err.message)
@@ -194,18 +197,15 @@ async function run() {
       }
     })
     app.post("/logutUser", async (req, res) => {
-        res.clearCookie("token", { cookieOptions, maxAge: 0 })
-        .send({ success: true });
+      res.clearCookie("token", { ...cookieOptions, maxAge: 0 }).send({ success: true });
     })
-    app.get("/getOtherComment/:email", verify, async (req, res) => {
+    app.get("/getOtherComment/:email", async (req, res) => {
       try {
-        if (req.decode === req.params.email) {
+       
           const email = req.params.email;
           const result = await dataRecomendation.find({ reEmail: { $ne: email } }).toArray()
           res.send(result);
-        } else {
-          res.send({ validation: "unauthorize user" })
-        }
+        
 
       }
       catch (err) {
