@@ -12,16 +12,13 @@ app.use(
       "http://localhost:5173",
       "https://cardoctor-bd.web.app",
       "https://cardoctor-bd.firebaseapp.com",
+      "https://alternative-product-bb915.web.app"
     ],
     credentials: true,
   })
 );
 app.use(cookieParser())
 
-// password
-// PVOatlalzfcaRiaF
-// userName
-// product_alternative
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -48,7 +45,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-
+     client.connect();
     const datacoll = client.db("alternativeProduct").collection("product");
     const dataRecomendation = client.db("alternativeProduct").collection("recommendation");
 
@@ -223,7 +220,7 @@ async function run() {
       const result = await datacoll.find(filter).toArray();
       res.send(result)
     })
-    await client.connect();
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
