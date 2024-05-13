@@ -24,8 +24,8 @@ app.use(cookieParser())
 // product_alternative
 const cookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: false,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
 };
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -54,6 +54,9 @@ async function run() {
 
     const verify = ((req, res, next) => {
       const findtoken = req.cookies.token;
+      if(findtoken === ""){
+        res.send({status : "UnAuthorize User"})
+      }
       jwt.verify(findtoken, process.env.JWT_SECRATE, (err, decode) => {
         if (err) {
           res.send({ seccess: false, user: "UnAuthroize User" })
@@ -72,6 +75,7 @@ async function run() {
     app.post("/createProduct", verify, async (req, res) => {
 
       const prods = req.body;
+      console.log(prods)
       try {
         if (req.decode === prods.userinfotime.userEmail) {
           const result = await datacoll.insertOne(prods)
@@ -196,7 +200,7 @@ async function run() {
         res.send(err.message)
       }
     })
-    app.post("/logutUser", async (req, res) => {
+    app.get("/logutUser", async (req, res) => {
       res.clearCookie("token", { ...cookieOptions, maxAge: 0 }).send({ success: true });
     })
     app.get("/getOtherComment/:email", async (req, res) => {
