@@ -52,7 +52,7 @@ async function run() {
 
     const verify = ((req, res, next) => {
       const findtoken = req.cookies.token;
-      if(findtoken === ""){
+      if(findtoken === null){
         res.send({status : "UnAuthorize User"})
       }
       jwt.verify(findtoken, process.env.JWT_SECRATE, (err, decode) => {
