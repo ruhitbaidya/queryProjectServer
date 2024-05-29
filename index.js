@@ -4,9 +4,15 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const app = express();
-
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://cardoctor-bd.web.app",
+    "https://cardoctor-bd.firebaseapp.com",
+  ],
+  credentials: true,
+}));
 
 app.use(cookieParser());
 
@@ -39,6 +45,7 @@ async function run() {
     //  await client.connect();
     //  await client.db("admin").command({ ping: 1 });
     const datacoll = client.db("alternativeProduct").collection("product");
+    const addcard = client.db("alternativeProduct").collection("card");
     const dataRecomendation = client
       .db("alternativeProduct")
       .collection("recommendation");
@@ -46,12 +53,13 @@ async function run() {
     const verify = (req, res, next) => {
       try {
         const findtoken = req.cookies.token;
+
         if (findtoken === null) {
-          res.send({ status: "UnAuthorize User" });
+          res.send({ status: "findUnAuthorize User" });
         }
         jwt.verify(findtoken, process.env.JWT_SECRATE, (err, decode) => {
           if (err) {
-            res.send({ success: false, user: "UnAuthroize User" });
+            res.send({ success: false, user: "errUnAuthroize User" });
           }
 
           req.decode = decode;
@@ -72,6 +80,16 @@ async function run() {
       }
     });
 
+    app.get("/productGetCard", verify, async(req, res)=>{
+        const result = await addcard.find().toArray();
+        res.send(result)
+    })
+    app.delete("/deleteCardProduct/:id", async(req, res)=>{
+        console.log(req.params.id)
+        const ids = {_id : new ObjectId(req.params.id)}
+        const result = await addcard.deleteOne(ids)
+        res.send(result)
+    })
     app.post("/createProduct", verify, async (req, res) => {
       try {
         const prods = req.body;
@@ -90,6 +108,11 @@ async function run() {
       }
     });
 
+    app.post("/addCard", verify, async(req, res)=>{
+        const product = req.body
+        const result = await addcard.insertOne(product);
+        res.send(result)
+    })
     app.get("/findProduct", async (req, res) => {
       try {
         const result = await datacoll.find().toArray();
