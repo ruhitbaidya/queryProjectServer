@@ -5,16 +5,19 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const app = express();
 app.use(express.json());
+
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://cardoctor-bd.web.app",
-    "https://cardoctor-bd.firebaseapp.com",
+    "https://alternative-product-bb915.web.app"
   ],
   credentials: true,
 }));
 
+
 app.use(cookieParser());
+
+const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 const cookieOptions = {
   httpOnly: true,
@@ -54,21 +57,40 @@ async function run() {
       try {
         const findtoken = req.cookies.token;
 
-        if (findtoken === null) {
-          res.send({ status: "findUnAuthorize User" });
+        if (findtoken === undefined) {
+          return res.send({ status: "findUnAuthorize User" });
         }
         jwt.verify(findtoken, process.env.JWT_SECRATE, (err, decode) => {
           if (err) {
-            res.send({ success: false, user: "errUnAuthroize User" });
+            return res.send({ success: false, user: "errUnAuthroize User" });
+          } else {
+            req.decode = decode;
+            next();
           }
-
-          req.decode = decode;
-          next();
         });
       } catch (err) {
         res.send({ success: false, message: err.message });
       }
     };
+
+    // payment integreat
+
+    app.post("/payment-create", async(req, res)=>{
+        const price = req.body;
+
+        const num = parseInt(price.money * 100);
+        
+        const paymentIngreat = await stripe.paymentIntents.create({
+            amount : 200,
+            currency : "usd",
+            automatic_payment_methods: {
+              enabled: true,
+            },
+        })
+
+        res.send({clientSecrate : paymentIngreat.client_secret});
+    })
+ 
 
     app.get("/jwtTokenCreate/:email", async (req, res) => {
       try {
@@ -80,16 +102,16 @@ async function run() {
       }
     });
 
-    app.get("/productGetCard", verify, async(req, res)=>{
-        const result = await addcard.find().toArray();
-        res.send(result)
-    })
-    app.delete("/deleteCardProduct/:id", async(req, res)=>{
-        console.log(req.params.id)
-        const ids = {_id : new ObjectId(req.params.id)}
-        const result = await addcard.deleteOne(ids)
-        res.send(result)
-    })
+    app.get("/productGetCard", verify, async (req, res) => {
+      const result = await addcard.find().toArray();
+      res.send(result);
+    });
+    app.delete("/deleteCardProduct/:id", async (req, res) => {
+      console.log(req.params.id);
+      const ids = { _id: new ObjectId(req.params.id) };
+      const result = await addcard.deleteOne(ids);
+      res.send(result);
+    });
     app.post("/createProduct", verify, async (req, res) => {
       try {
         const prods = req.body;
@@ -108,11 +130,11 @@ async function run() {
       }
     });
 
-    app.post("/addCard", verify, async(req, res)=>{
-        const product = req.body
-        const result = await addcard.insertOne(product);
-        res.send(result)
-    })
+    app.post("/addCard", verify, async (req, res) => {
+      const product = req.body;
+      const result = await addcard.insertOne(product);
+      res.send(result);
+    });
     app.get("/findProduct", async (req, res) => {
       try {
         const result = await datacoll.find().toArray();
