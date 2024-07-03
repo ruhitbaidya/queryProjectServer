@@ -11,8 +11,15 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS configuration
+const corsOptions = {
+  origin: 'https://query-project-client.vercel.app', // Allow only this origin
+  methods: ['GET', 'POST'], // Allow only GET and POST requests
+  allowedHeaders: ['Content-Type'], // Allow only Content-Type header
+  credentials: true, // Allow credentials
+};
 
-app.use(cors());
+// Use CORS middleware
+app.use(cors(corsOptions));
 const cookieOptions = {
   httpOnly: true,
   secure: true,
