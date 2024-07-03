@@ -11,17 +11,11 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS configuration
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://cardoctor-bd.web.app",
-      "https://query-project-client.vercel.app",
-    ],
-    credentials: true,
-  })
-);
-
+const corsOptions = {
+  origin: ['http://localhost:5174', 'https://query-project-client.vercel.app'],
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 const cookieOptions = {
   httpOnly: true,
   secure: true,
