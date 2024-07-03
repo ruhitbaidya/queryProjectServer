@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const stripe = require("stripe")(process.env.STRIPE_KEY);
+// const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 const app = express();
 app.use(express.json());
