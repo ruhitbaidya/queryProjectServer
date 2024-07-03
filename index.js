@@ -11,15 +11,16 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS configuration
-const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "https://alternative-product-bb915.web.app"
-  ],
-  credentials: true
-};
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://cardoctor-bd.web.app",
+      "https://query-project-client.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 
 const cookieOptions = {
   httpOnly: true,
