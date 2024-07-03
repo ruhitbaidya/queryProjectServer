@@ -11,11 +11,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS configuration
-const corsOptions = {
-  origin: ['http://localhost:5174', 'https://query-project-client.vercel.app'],
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+
+app.use(cors());
 const cookieOptions = {
   httpOnly: true,
   secure: true,
@@ -85,7 +82,7 @@ async function run() {
       }
     });
 
-    app.get("/productGetCard", verify, async (req, res) => {
+    app.get("/productGetCard", async (req, res) => {
       const result = await addcard.find().toArray();
       return res.send(result);
     });
@@ -96,7 +93,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/createProductAlternative", verify, async (req, res) => {
+    app.post("/createProductAlternative", async (req, res) => {
       try {
         const prods = req.body;
         const result = await datacoll.insertOne(prods);
@@ -106,7 +103,7 @@ async function run() {
       }
     });
 
-    app.post("/addCard", verify, async (req, res) => {
+    app.post("/addCard", async (req, res) => {
       const product = req.body;
       const result = await addcard.insertOne(product);
       res.send(result);
@@ -121,7 +118,7 @@ async function run() {
       }
     });
 
-    app.get("/getProductByEmailalternative", verify, async (req, res) => {
+    app.get("/getProductByEmailalternative", async (req, res) => {
       try {
         if (req.decode === req.query.email) {
           const email = { "userinfotime.userEmail": req.query.email };
