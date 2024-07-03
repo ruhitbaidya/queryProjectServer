@@ -5,33 +5,26 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const app = express();
 app.use(express.json());
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://cardoctor-bd.web.app",
-    "https://cardoctor-bd.firebaseapp.com",
-  ],
-  credentials: true,
-}));
-
 app.use(cookieParser());
+const corsOptions = {
+  origin: 'http://localhost:5173',
+  credentials: true // This allows cookies and other credentials to be sent
+};
 
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 const cookieOptions = {
   httpOnly: true,
   secure: true,
-  sameSite: "none",
+  sameSite: true,
 };
+
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.USER_DB}:${process.env.USER_PASS}@datafind.xfgov3s.mongodb.net/?retryWrites=true&w=majority&appName=datafind`;
 
-// if(req.decode === req.params.email){
-
-// }else{
-//   res.send({validation : "unauthorize user"})
-// }
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -42,8 +35,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    //  await client.connect();
-    //  await client.db("admin").command({ ping: 1 });
     const datacoll = client.db("alternativeProduct").collection("product");
     const addcard = client.db("alternativeProduct").collection("card");
     const dataRecomendation = client
@@ -80,39 +71,33 @@ async function run() {
       }
     });
 
-    app.get("/productGetCard", verify, async(req, res)=>{
-        const result = await addcard.find().toArray();
-        res.send(result)
-    })
-    app.delete("/deleteCardProduct/:id", async(req, res)=>{
-        console.log(req.params.id)
-        const ids = {_id : new ObjectId(req.params.id)}
-        const result = await addcard.deleteOne(ids)
-        res.send(result)
-    })
-    app.post("/createProduct", verify, async (req, res) => {
+    app.get("/productGetCard", verify, async (req, res) => {
+      const result = await addcard.find().toArray();
+      res.send(result);
+    });
+    app.delete("/deleteCardProduct/:id", async (req, res) => {
+      const ids = { _id: new ObjectId(req.params.id) };
+      const result = await addcard.deleteOne(ids);
+      res.send(result);
+    });
+    app.post("/createProductAlternative", async (req, res) => {
       try {
         const prods = req.body;
-        const decodeemial = req.decode;
-        const routemail = prods.userinfotime.userEmail;
-        // console.log(prods)
-        // console.log(res.decode, prods.userinfotime.userEmail)
-        if (decodeemial === routemail) {
+
           const result = await datacoll.insertOne(prods);
-          res.send(result);
-        } else {
-          console.log("not found");
-        }
+          return res.send(result);
+       
+      
       } catch {
         res.send({ message: "server error" });
       }
     });
 
-    app.post("/addCard", verify, async(req, res)=>{
-        const product = req.body
-        const result = await addcard.insertOne(product);
-        res.send(result)
-    })
+    app.post("/addCard", verify, async (req, res) => {
+      const product = req.body;
+      const result = await addcard.insertOne(product);
+      res.send(result);
+    });
     app.get("/findProduct", async (req, res) => {
       try {
         const result = await datacoll.find().toArray();
@@ -122,14 +107,14 @@ async function run() {
       }
     });
 
-    app.get("/getProductByEmail", verify, async (req, res) => {
+    app.get("/getProductByEmailalternative", verify, async (req, res) => {
       try {
         if (req.decode === req.query.email) {
           const email = { "userinfotime.userEmail": req.query.email };
           const result = await datacoll.find(email).toArray();
-          res.send(result);
+          return res.send(result);
         } else {
-          res.send({ error: "router : Invalid User" });
+          return res.send({ error: "router : Invalid User" });
         }
       } catch (err) {
         res.send(err.message);
@@ -153,7 +138,7 @@ async function run() {
         const options = {
           $set: find,
         };
-        console.log(options);
+
         const result = await datacoll.updateOne(id, options);
         res.send(result);
       } catch (err) {
@@ -172,7 +157,6 @@ async function run() {
     });
 
     app.post("/comment", async (req, res) => {
-      console.log(req.body);
       try {
         const idscount = { _id: new ObjectId(req.body.queryId) };
         const increment = { $inc: { "userinfotime.recommendationCount": 1 } };
@@ -240,8 +224,6 @@ async function run() {
       const result = await datacoll.find(filter).toArray();
       res.send(result);
     });
-
-    // Send a ping to confirm a successful connection
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
